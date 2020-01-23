@@ -1,13 +1,13 @@
 /* 
  * Water Sensor source code
  * author: roby
- * ver. : 1.1
- * date: 2020 01 15
+ * ver. : 1.2
+ * date: 2020 01 23
  */
 
 //
 // sleep / powerdown header
-#include <avr/sleep.h>
+#include "LowPower.h"
 
 #define DEBUG
 #ifdef DEBUG
@@ -18,11 +18,7 @@
 
 //
 // program version
-const String currVersion = "v20200115";
-
-  //
-  // use 3.3V to ARef (be sure to measure it with a multimeter )
-const double arefVoltage = 3.3;
+const String currVersion = "v20200123";
 
 const int NOTE_1 =  220;
 const int NOTE_2 =  440;
@@ -156,8 +152,8 @@ void loop() {
   // led blink: I am alive
   ledBlink( 200 );
 
-  int sleepActualTime = sleepLongTime;
-
+  bool enableLowPowerSuspend = true;
+  
   if( checkForWaterLeakage() )
   {
     //
@@ -165,9 +161,38 @@ void loop() {
     playAlarm( );
 
     //
-    // in case of alarm shorten delay to next check
-    sleepActualTime = sleepShortTime;
+    // in case of alarm disable low-power suspend
+    enableLowPowerSuspend = false;
+
+    delay(3000);
+    
+  } else {
+    
+    enableLowPowerSuspend = true;
   }
 
-  delay( sleepActualTime );
+  //
+  // go into low-power mode
+  //  note: low-power mode is disabled when 
+  //        an alarm condition is detected
+  if(enableLowPowerSuspend) {
+
+    print_debug( "suspending into low-power mode ..." );
+    delay(300);
+      
+    const int loopCount = 4;
+    
+    for(int i = 0; i < loopCount; i++) {
+      //
+      // Enter power down state for 8 s with ADC and BOD module disabled
+      LowPower.powerDown(SLEEP_8S, ADC_OFF, BOD_OFF);
+    }
+
+    delay(300);
+    print_debug( "resuming from low-power mode ..." );
+
+  }
+
+  //
+  // end of loop()
 }
