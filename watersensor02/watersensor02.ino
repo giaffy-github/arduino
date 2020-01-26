@@ -37,10 +37,12 @@ const String currVersion = "v20200126";
 // water voltage level
 //  if the voltage level < waterVoltage the sensor
 //  => water presence;
-//  tests with 220 Ohm + water sensor + 10K Ohm revealed
-//  - no water 1021 < read value < 1023
+//  tests with 100 KOhm + 100 Ohm + water sensor
+//  - no water 1020 < read value < 1023
 //  - water           read value < 1020
-const int waterVoltage = 1020;
+//  pick 1014 < 1020 for safe margin: when sensor
+//    read a value less than 1014, trigger alarm
+const int waterVoltage = 1014;
 
 const int NOTE_1 =  220;
 const int NOTE_2 =  440;
@@ -110,7 +112,7 @@ void setup() {
   print_debug( "testing sound ..." );
   playAlarm();
 
-  print_debug("threashold value :");
+  print_debug("sensor threshold value :");
   print_debug( waterVoltage );
 
   print_debug( "app ready ..." );
